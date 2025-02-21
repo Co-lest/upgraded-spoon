@@ -9,37 +9,40 @@ const connection = mysql.createConnection({
   database: "reconnecting",
 });
 
-export function connectDatabase () {
-    connection.connect((err) => {
-        if (err) {
-            console.error(`Failed to connect to database: ${err}`);
-            connectedToDatabase = false;
-            return connectedToDatabase;
-        }
-        connectedToDatabase = true;
-        console.log("Connected to database!");
-        return connectedToDatabase;
+export async function connectDatabase() {
+    return new Promise((resolve, reject) => {
+        connection.connect((err) => {
+            if (err) {
+                console.error(`Failed to connect to database: ${err}`);
+                connectedToDatabase = false;
+                reject(connectedToDatabase);
+                return;
+            }
+            connectedToDatabase = true;
+            console.log("Connected to database!");
+            resolve(connectedToDatabase);
+        });
     });
 }
 
-export function insertUser () {
-    connection.query(
-        `
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                \`username\` VARCHAR(100),
-                \`name\` VARCHAR(100),
-                \`password\` VARCHAR(200),
-                \`school\` VARCHAR(200),
-                \`interests\` VARCHAR(200),
-                \`hometown\` VARCHAR(200)
-            );
-        `,
-        (err, results) => {
-        if (err) {
-            console.error("Error creating table:", err);
-            return;
-        }
-        }
-    );
+export function insertUser (obj) {
+    const insertQuery = `
+    INSERT INTO users (username, name, password, school, interests, hometown)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  connection.query(insertQuery, [
+    obj.username,
+    obj.name,
+    obj.password,
+    obj.school,
+    obj.interests,
+    obj.hometown
+  ], (err, results) => {
+    if (err) {
+        console.error(`Error inserting data: ${err}`);
+        return;
+    }
+    console.log(`Data inserted succesfully!`);
+    // connection.end();
+  });
 }

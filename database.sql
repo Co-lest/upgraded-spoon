@@ -11,4 +11,4 @@ CREATE TABLE users (
     `hometown` VARCHAR(200)
     );
 
---INSERT INTO users (name, email) VALUES ('John Doe', 'john@example.com');
+INSERT INTO users (username, name, password, school, interests, hometown) VALUES (?, ?, ?, ?, ?, ?);

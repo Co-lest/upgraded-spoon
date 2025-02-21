@@ -5,11 +5,17 @@ import { fileURLToPath } from "url";
 import path from "path";
 import { insertUser, connectDatabase } from "./database/database.js";
 
-let connectedToDatabase;
+let connectedToDatabase = true;
 
-connectedToDatabase = connectDatabase();
-
-console.log(connectedToDatabase);
+(async function databaseState() {
+  console.log(`Async connect database!`);
+  try {
+    connectedToDatabase = await connectDatabase();
+  } catch(err) {
+    connectedToDatabase = false;
+    console.error(`Had an error connecting to database from server!`);
+  }
+})();
 
 const port = process.env.PORT || 5500;
 
@@ -42,6 +48,11 @@ const server = http.createServer(async (req, res) => {
       try {
         const receivedData = JSON.parse(body);
         console.log("Received data:", receivedData);
+
+        if (connectedToDatabase) {
+          insertUser(receivedData);
+        }
+        
         // res.writeHead(200, { "Content-Type": "application/json" });
         // res.end(JSON.stringify({ message: "Data received" }));
       } catch (error) {
@@ -49,31 +60,6 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "Invalid JSON" }));
       }
-
-      // if (connectedToDatabase) {
-      //     const insertQuery = `
-      //     INSERT INTO users (username, name, password, school, interests, hometown)
-      //     VALUES (?, ?, ?, ?, ?, ?)
-      //   `;
-      //   connection.query(insertQuery, [
-      //     body.username,
-      //     body.name,
-      //     body.password,
-      //     body.school,
-      //     body.interests,
-      //     body.hometown
-      //   ], (err, results) => {
-      //     if (err) {
-      //         console.error(`Error inserting data: ${err}`);
-      //         return;
-      //     }
-      //     console.log(`Data inserted succesfully!`);
-      //     connection.end();
-      //   });
-      // } else {
-      //     console.error(`Error connecting to database: ${err}`);
-      //     return;
-      // }
 
       res.write("Hello from server");
       res.end(JSON.stringify({ status: "success", receivedMessage: body }));
