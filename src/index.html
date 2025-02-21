@@ -4,81 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sign Up</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        background-color: #f8f8f8;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        margin: 0;
-      }
-
-      .signup-container {
-        background-color: white;
-        padding: 40px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        width: 350px; /* Adjust width as needed */
-      }
-
-      h2 {
-        color: #5f45bc; /* Purple heading */
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 8px;
-        color: #333; /* Darker gray label color */
-      }
-
-      input[type="text"],
-      input[type="email"],
-      input[type="password"] {
-        width: calc(
-          100% - 18px
-        ); /* Full width input with padding/border adjustment*/
-        padding: 10px;
-        margin-bottom: 16px;
-        border: 1px solid #ddd; /* Light gray border */
-        border-radius: 4px;
-        box-sizing: border-box; /* Include padding in width */
-      }
-
-      button {
-        background-color: #5f45bc; /* Purple button */
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        width: 100%;
-      }
-
-      button:hover {
-        background-color: #4c3791; /* Darker purple on hover */
-      }
-
-      .error-message {
-        color: red;
-        margin-top: 10px;
-      }
-      .login-link {
-        text-align: center;
-        margin-top: 10px;
-      }
-
-      a {
-        color: #5f45bc;
-        text-decoration: none;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-    </style>
+    <link rel="stylesheet" href="index.css">
   </head>
   <body>
     <div class="signup-container">
@@ -89,19 +15,19 @@
         <input type="text" id="username" name="username" required />
 
         <label for="name">Name:</label>
-        <input type="text" name="name", id="name" required />
+        <input type="text" name="name" , id="name" required />
 
         <label for="school">School:</label>
         <input type="text" id="school" name="school" required />
 
         <label for="hometown">Hometown</label>
-        <input type="text" id="hometown" name="hometown" required>
+        <input type="text" id="hometown" name="hometown" required />
 
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required />
 
         <label for="interests">Interests</label>
-        <input type="text" id="interests" name="interests" required>
+        <input type="text" id="interests" name="interests" required />
 
         <button type="submit">Sign Up</button>
 
@@ -111,68 +37,6 @@
         </div>
       </form>
     </div>
-
-    <script>
-      const signup = document.querySelector("#signup-form");
-      const username = document.querySelector("#username");
-      const school = document.querySelector("#school");
-      const password = document.querySelector("#password");
-      const name = document.querySelector("#name");
-      const hometown = document.querySelector("#hometown");
-      const interests = document.querySelector("#interests");
-
-      const obj = { name: "", username: "", password: "", hometown: "", school: "", interests: "" };
-
-      signup.addEventListener("submit", function (event) {
-        event.preventDefault(); // Prevent form from reloading
-
-        const usernameValue = username.value;
-        const schoolValue = school.value;
-        const passwordValue = password.value;
-        const hometownValue = hometown.value;
-        const interestsValue = interests.value;
-        const nameValue = name.value;
-
-        if (!usernameValue || !schoolValue || !passwordValue || !interestsValue || !hometownValue || !nameValue) {
-          const errorMessage = document.createElement("div");
-          errorMessage.setAttribute("class", "error-message");
-          errorMessage.textContent = "All fields are required.";
-          document.body.appendChild(errorMessage);
-          setTimeout(() => {
-            document.body.remove(errorMessage);
-          }, 2500);
-          return;
-        } else {
-            obj.username = usernameValue;
-            obj.school = schoolValue;
-            obj.password = passwordValue;
-            obj.interests = interestsValue;
-            obj.hometown = hometownValue;
-            obj.name = nameValue;
-
-          fetch("http://localhost:3303/api/users", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(obj),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-              }
-              console.log(response);
-            })
-            // .then((data) => {
-            //   console.log(data); // Process the response
-            //   alert("Sign up successful!");
-            // })
-            .catch((error) => {
-              console.error("Fetch error:", error);
-            });
-        }
-        signup.reset(); // Clear the form
-      });
-    </script>
   </body>
+  <script defer src="index.js"></script>
 </html>
