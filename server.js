@@ -3,16 +3,15 @@ import "dotenv/config";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
 import path from "path";
-import { insertUser, connectDatabase } from "./database/database.js";
+import { insertUser, connectDatabase, loginUser } from "./database/database.js";
+import WebSocket from "ws";
 
-let connectedToDatabase = true;
+let connectedToDatabase = false;
 
 (async function databaseState() {
-  console.log(`Async connect database!`);
   try {
     connectedToDatabase = await connectDatabase();
   } catch(err) {
-    connectedToDatabase = false;
     console.error(`Had an error connecting to database from server!`);
   }
 })();
@@ -37,6 +36,10 @@ const server = http.createServer(async (req, res) => {
     filePath = "index.html";
 
     loadFile(res, filePath);
+  } else if (req.url === "/login.html") {
+    filePath = "login.html";
+
+    loadFile(res, filePath);
   } else if (req.url === "/favicon.ico") {
 
   } else if (req.method === "POST" && req.url === "/api/users") {
@@ -50,9 +53,18 @@ const server = http.createServer(async (req, res) => {
         console.log("Received data:", receivedData);
 
         if (connectedToDatabase) {
-          insertUser(receivedData);
+          let doesUserExist;
+          (async () => {
+            doesUserExist = await insertUser(receivedData);
+          })();
+
+          if (doesUserExist) {
+            console.log(`Username already taken!`);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Username already used!" }));
+          }
         }
-        
+
         // res.writeHead(200, { "Content-Type": "application/json" });
         // res.end(JSON.stringify({ message: "Data received" }));
       } catch (error) {
@@ -64,19 +76,37 @@ const server = http.createServer(async (req, res) => {
       res.write("Hello from server");
       res.end(JSON.stringify({ status: "success", receivedMessage: body }));
     });
-  } else if (req.url === "/login.html") {
-    filePath = "login.html";
-
-    loadFile(res, filePath);
   } else if (req.url === "/api/log" && req.method === "POST") {
-    let body;
-
-    req.on("data", (dataChunk) => {
-      body += dataChunk.toString();
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
     });
-
     req.on("end", () => {
-      console.log(`Received body: ${body}`);
+      try {
+        const receivedData = JSON.parse(body);
+        console.log("Received data:", receivedData);
+
+        if (connectedToDatabase) {
+          let logBool;
+          (async () => {
+            logBool = await loginUser(receivedData);
+          })();
+          console.log(`Is user logged in: ${logBool}`);
+
+          if (logBool) {
+            filePath = "home.html"
+
+            loadFileHome(res, filePath);
+          } // else {
+          //   res.writeHead(200, { "Content-Type": "application/json" });
+          //   res.end(JSON.stringify({ message: "Access denied!" }));
+          // }
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid JSON" }));
+      }
 
       res.write("Hello from server");
       res.end(JSON.stringify({ status: "success", receivedMessage: body }));
@@ -84,7 +114,6 @@ const server = http.createServer(async (req, res) => {
   } else {
     console.log("Serving static file:", req.url); // Log static file requests
     filePath = req.url.slice(1);
-
 
     loadFile(res, filePath);
   }
@@ -112,6 +141,10 @@ async function loadFile(res, filePath) {
   }
 }
 
+async function loadFileHome(res, filePath, ) {
+  
+}
+
 server.listen(port, () => {
-  console.log(`Port listening on port: ${port}`);
+  console.log(`Server listening on port: ${port}`);
 });

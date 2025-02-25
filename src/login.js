@@ -4,7 +4,7 @@ const password = document.querySelector("#password");
 
 const obj = { username: "", password: "" };
 
-signup.addEventListener("submit", function (event) {
+signup.addEventListener("submit", (event) => {
   event.preventDefault(); // Prevent form from reloading
 
   const usernameValue = username.value;
@@ -38,11 +38,10 @@ signup.addEventListener("submit", function (event) {
       })
       .then((data) => {
         console.log(data); // Process the response
-        alert("Sign up successful!");
       })
       .catch((error) => {
         console.error("Fetch error:", error);
       });
   }
-  signup.reset(); // Clear the form
+  signup.reset();
 });

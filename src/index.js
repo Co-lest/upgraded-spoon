@@ -5,18 +5,20 @@ const password = document.querySelector("#password");
 const name = document.querySelector("#name");
 const hometown = document.querySelector("#hometown");
 const interests = document.querySelector("#interests");
+const picture = document.querySelector("#picture");
 
-const obj = { name: "", username: "", password: "", hometown: "", school: "", interests: "" };
+const obj = { name: "", username: "", password: "", hometown: "", school: "", interests: "", picture: "" };
 
 signup.addEventListener("submit", function (event) {
   event.preventDefault(); // Prevent form from reloading
 
-  const usernameValue = username.value;
-  const schoolValue = school.value;
-  const passwordValue = password.value;
-  const hometownValue = hometown.value;
-  const interestsValue = interests.value;
-  const nameValue = name.value;
+  let usernameValue = username.value.trim();
+  let schoolValue = school.value;
+  let passwordValue = password.value;
+  let hometownValue = hometown.value;
+  let interestsValue = interests.value;
+  let nameValue = name.value;
+  let pictureValue = picture.value.trim();
 
   if (!usernameValue || !schoolValue || !passwordValue || !interestsValue || !hometownValue || !nameValue) {
     const errorMessage = document.createElement("div");
@@ -34,6 +36,7 @@ signup.addEventListener("submit", function (event) {
       obj.interests = interestsValue;
       obj.hometown = hometownValue;
       obj.name = nameValue;
+      obj.picture = pictureValue;
 
       let objString = JSON.stringify(obj);
       console.log(obj)
