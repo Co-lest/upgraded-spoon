@@ -96,7 +96,7 @@ const server = http.createServer(async (req, res) => {
           if (logBool) {
             filePath = "home.html"
 
-            loadFileHome(res, filePath);
+            loadFileHome(res, filePath, receivedData);
           } // else {
           //   res.writeHead(200, { "Content-Type": "application/json" });
           //   res.end(JSON.stringify({ message: "Access denied!" }));
@@ -141,8 +141,26 @@ async function loadFile(res, filePath) {
   }
 }
 
-async function loadFileHome(res, filePath, ) {
-  
+async function loadFileHome(res, filePath, userObj) {
+  const fullPath = path.join(__dirname, "src", filePath);
+  console.log(fullPath);
+  try {
+    const content = await fs.readFile(fullPath);
+    const ext = path.extname(filePath);
+    const contentType =
+      {
+        ".html": "text/html",
+        ".css": "text/css",
+        ".js": "text/javascript",
+      }[ext] || "text/plain";
+
+    res.writeHead(200, { "Content-Type": contentType });
+    res.end(content);
+  } catch (err) {
+    res.statusCode = 404;
+    res.end("File not found!");
+    console.error(`Error getting the html file`, err);
+  }
 }
 
 server.listen(port, () => {

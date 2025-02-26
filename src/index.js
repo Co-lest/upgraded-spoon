@@ -56,11 +56,13 @@ signup.addEventListener("submit", function (event) {
       })
       .then((data) => {
         console.log(data); // Process the response
-        alert("Sign up successful!");
       })
       .catch((error) => {
         console.error("Fetch error:", error);
       });
+      if (false) {
+        console.log(`User signed up`);
+      }
   }
   signup.reset();
 });
