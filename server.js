@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import { fileURLToPath } from "url";
 import path from "path";
 import { insertUser, connectDatabase, loginUser } from "./database/database.js";
-import WebSocket from "ws";
+import { WebSocketServer } from "ws";
 
 let connectedToDatabase = false;
 
@@ -44,6 +44,7 @@ const server = http.createServer(async (req, res) => {
 
   } else if (req.method === "POST" && req.url === "/api/users") {
     let body = "";
+    filePath = "home.html";
     req.on("data", (chunk) => {
       body += chunk.toString(); // convert Buffer to string
     });
@@ -62,6 +63,8 @@ const server = http.createServer(async (req, res) => {
             console.log(`Username already taken!`);
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "Username already used!" }));
+          } else {
+            loadFileHome(res, filePath, obj);
           }
         }
 
@@ -117,6 +120,16 @@ const server = http.createServer(async (req, res) => {
 
     loadFile(res, filePath);
   }
+});
+
+const wss = new WebSocketServer({ server });
+
+const clients = new Set();
+
+wss.on("connection", () => {
+  clients.add(ws);
+
+  console.log(`A new client connected!`);
 });
 
 async function loadFile(res, filePath) {
