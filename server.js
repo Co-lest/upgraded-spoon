@@ -40,13 +40,17 @@ const server = http.createServer(async (req, res) => {
     filePath = "login.html";
 
     loadFile(res, filePath);
+  } else if (req.url == "/home.html") {
+    filePath = "home.html";
+
+    loadFile(res, filePath);
   } else if (req.url === "/favicon.ico") {
 
   } else if (req.method === "POST" && req.url === "/api/users") {
     let body = "";
     filePath = "home.html";
     req.on("data", (chunk) => {
-      body += chunk.toString(); // convert Buffer to string
+      body += chunk.toString();
     });
     req.on("end", () => {
       try {
@@ -61,10 +65,12 @@ const server = http.createServer(async (req, res) => {
 
           if (doesUserExist) {
             console.log(`Username already taken!`);
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "Username already used!" }));
+            // res.writeHead(200, { "Content-Type": "application/json" });
+            // res.end(JSON.stringify({ message: "Username already used!" }));
           } else {
-            loadFileHome(res, filePath, obj);
+            (async() => {
+              await loadFile(res, filePath);
+            })();
           }
         }
 
@@ -79,46 +85,11 @@ const server = http.createServer(async (req, res) => {
       res.write("Hello from server");
       res.end(JSON.stringify({ status: "success", receivedMessage: body }));
     });
-  } else if (req.url === "/api/log" && req.method === "POST") {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk.toString();
-    });
-    req.on("end", () => {
-      try {
-        const receivedData = JSON.parse(body);
-        console.log("Received data:", receivedData);
-
-        if (connectedToDatabase) {
-          let logBool;
-          (async () => {
-            logBool = await loginUser(receivedData);
-          })();
-          console.log(`Is user logged in: ${logBool}`);
-
-          if (logBool) {
-            filePath = "home.html"
-
-            loadFileHome(res, filePath, receivedData);
-          } // else {
-          //   res.writeHead(200, { "Content-Type": "application/json" });
-          //   res.end(JSON.stringify({ message: "Access denied!" }));
-          // }
-        }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Invalid JSON" }));
-      }
-
-      res.write("Hello from server");
-      res.end(JSON.stringify({ status: "success", receivedMessage: body }));
-    });
   } else {
     console.log("Serving static file:", req.url); // Log static file requests
     filePath = req.url.slice(1);
 
-    loadFile(res, filePath);
+    await loadFile(res, filePath);
   }
 });
 
@@ -126,10 +97,26 @@ const wss = new WebSocketServer({ server });
 
 const clients = new Set();
 
-wss.on("connection", () => {
+wss.on("connection", (ws) => {
   clients.add(ws);
 
-  console.log(`A new client connected!`);
+  console.log(`A new user connected!`);
+
+  ws.on("message", (data) => {
+    let receivedData = JSON.parse(data);
+    if (connectedToDatabase) {
+      loginUser(receivedData)
+      .then((logboool) => {
+        if (logboool) {
+          console.log(`Logbool: ${logboool}`);
+          ws.send(JSON.stringify({IsloggedIn: logboool}));
+        } else {
+          console.log(`Username or password does not match: ${logboool}`);
+          ws.send(JSON.stringify({IsloggedIn: logboool}));
+        }
+      });
+    }
+  });
 });
 
 async function loadFile(res, filePath) {
@@ -147,6 +134,7 @@ async function loadFile(res, filePath) {
 
     res.writeHead(200, { "Content-Type": contentType });
     res.end(content);
+    return;
   } catch (err) {
     res.statusCode = 404;
     res.end("File not found!");
@@ -154,7 +142,11 @@ async function loadFile(res, filePath) {
   }
 }
 
-async function loadFileHome(res, filePath, userObj) {
+server.listen(port, () => {
+  console.log(`Server listening on port: ${port}`);
+});
+
+async function loadFileHome(res, filePath) {
   const fullPath = path.join(__dirname, "src", filePath);
   console.log(fullPath);
   try {
@@ -170,12 +162,20 @@ async function loadFileHome(res, filePath, userObj) {
     res.writeHead(200, { "Content-Type": contentType });
     res.end(content);
   } catch (err) {
-    res.statusCode = 404;
-    res.end("File not found!");
-    console.error(`Error getting the html file`, err);
+    // res.statusCode = 404;
+    // res.end("File not found!");
+    // console.error(`Error getting the html file`, err);
+
+    const content = await fs.readFile(fullPath);
+    const ext = path.extname(filePath);
+    const contentType =
+      {
+        ".html": "text/html",
+        ".css": "text/css",
+        ".js": "text/javascript",
+      }[ext] || "text/plain";
+
+    res.writeHead(200, { "Content-Type": contentType });
+    res.end(content);
   }
 }
-
-server.listen(port, () => {
-  console.log(`Server listening on port: ${port}`);
-});

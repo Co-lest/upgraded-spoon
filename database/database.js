@@ -36,11 +36,11 @@ export async function insertUser(obj) {
       console.log(`User already exists.`);
       return true;
     } else {
-      await query(
+      const results = await query(
         `INSERT INTO users (username, name, password, school, interests, hometown) VALUES (?, ?, ?, ?, ?, ?)`,
         [obj.username, obj.name, obj.password, obj.school, obj.interests, obj.hometown]
       );
-      console.log(`Data inserted successfully!`);
+      console.log(`Data inserted successfully!`, results);
       return false;
     }
   } catch (err) {
@@ -50,36 +50,20 @@ export async function insertUser(obj) {
 }
 
 export async function loginUser(obj) {
+  try {
+    const results = await query(`SELECT id FROM users WHERE username = ? AND password = ?`, [obj.username, obj.password]);
 
-  const results = await query(`SELECT id FROM users WHERE username = ? AND password = ?`);
-
-  if (results.length > 0) {
-    console.log(`Username: ${obj.username} logged in!`);
-    return true;
-  } 
-  console.log(`Wrong password: ${obj.username}`);
-
-
-  // const searchUser = `SELECT id FROM users WHERE username = ? AND password = ?`;
-
-  // connection.query(
-  //   searchUser,
-  //   [obj.username, obj.password],
-  //   (error, results, fields) => {
-  //     if (error) {
-  //       console.error(`Error fetching data!: ${err}`);
-  //       return;
-  //     }
-
-  //     if (results.length > 0) {
-  //       console.log(`${results[0]}`);
-  //       return true;
-  //     } else {
-  //       console.log(`Either user does not exist or wrong password!`);
-  //       return false;
-  //     }
-  //   }
-  // );
+    if (results.length > 0) {
+      console.log(`Username: ${obj.username} logged in!`);
+      return true;
+    } else {
+    console.log(`Wrong password or username: ${obj.username}`);
+    return false;
+    }
+  } catch (error) {
+    console.error(`Error fetchin' log details!: ${error}`);
+    throw error;
+  }
 }
 
 // connection.end(); // call this function when user has finnished all the database connection I dont think the application will reach a time when this is needed

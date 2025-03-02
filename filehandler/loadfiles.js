@@ -5,7 +5,7 @@ export async function loadFile(res, filePath) { // filepath  should be the full 
     const fullPath = path.join(__dirname, "src", filePath);
 
     const filedata = await fs.readFile(filePath);
-    const extname = path.extname(filePath);
+    const ext = path.extname(filePath);
     const contentType =
     {
       ".html": "text/html",
