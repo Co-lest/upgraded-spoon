@@ -37,8 +37,8 @@ export async function insertUser(obj) {
       return true;
     } else {
       const results = await query(
-        `INSERT INTO users (username, name, password, school, interests, hometown) VALUES (?, ?, ?, ?, ?, ?)`,
-        [obj.username, obj.name, obj.password, obj.school, obj.interests, obj.hometown]
+        `INSERT INTO users (username, name, password, school, interests, hometown, age) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [obj.username, obj.name, obj.password, obj.school, obj.interests, obj.hometown, obj.age]
       );
       console.log(`Data inserted successfully!`, results);
       return false;
@@ -62,6 +62,25 @@ export async function loginUser(obj) {
     }
   } catch (error) {
     console.error(`Error fetchin' log details!: ${error}`);
+    throw error;
+  }
+}
+
+export async function fetchHomepage(obj) {
+  console.log(`Homepage data: ${obj}`);
+
+  try {
+    const results = await query(`SELECT name, interests, school, age FROM users where username = ? AND password = ?`, [obj.username, obj.password]);
+
+    if (results.length > 0) {
+      // console.log(`Fetched ${results} from database!`);
+      return results;
+    } else {
+      console.error(`Error getting the homepage data!`);
+      return 0;
+    }
+  } catch (error) {
+    console.error(`Error fetching homepage data! ${error}`);
     throw error;
   }
 }

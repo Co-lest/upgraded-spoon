@@ -6,6 +6,7 @@ const name = document.querySelector("#name");
 const hometown = document.querySelector("#hometown");
 const interests = document.querySelector("#interests");
 const picture = document.querySelector("#picture");
+const age = document.querySelector("#age");
 
 const obj = { name: "", username: "", password: "", hometown: "", school: "", interests: "", picture: "" };
 
@@ -19,8 +20,9 @@ signup.addEventListener("submit", function (event) {
   let interestsValue = interests.value;
   let nameValue = name.value;
   let pictureValue = picture.value.trim();
+  let ageValue = age.value;
 
-  if (!usernameValue || !schoolValue || !passwordValue || !interestsValue || !hometownValue || !nameValue) {
+  if (!usernameValue || !schoolValue || !passwordValue || !interestsValue || !hometownValue || !nameValue || !ageValue) {
     const errorMessage = document.createElement("div");
     errorMessage.setAttribute("class", "error-message");
     errorMessage.textContent = "All fields are required.";
@@ -37,6 +39,7 @@ signup.addEventListener("submit", function (event) {
       obj.hometown = hometownValue;
       obj.name = nameValue;
       obj.picture = pictureValue;
+      obj.age = ageValue;
 
       let objString = JSON.stringify(obj);
       console.log(obj)

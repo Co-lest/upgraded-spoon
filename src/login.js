@@ -3,6 +3,10 @@ const username = document.querySelector("#username");
 const password = document.querySelector("#password");
 const signupContainer = document.querySelector(".signup-container");
 const homepage = document.querySelector(".homepage");
+const profileName = document.querySelector(".profileName");
+const hobbies = document.querySelector(".hobbies");
+const age = document.querySelector(".age"); 
+const school = document.querySelector(".school");
 
 let ws;
 
@@ -55,13 +59,28 @@ function connectWebSocket (){
 
     ws.addEventListener("message", (mes) => {
       let data = JSON.parse(mes.data);
-      // console.log(data);
+      // console.log(data); isLoggedIn true or false
 
       if (data.IsloggedIn) {
         signupContainer.style.display = "none";
         homepage.style.display = "block";
+
+        obj.type = "homepage";
+        // console.log(obj); // { "type": "homepage", "username": "Colest_", "password": "1234" }
+
+        ws.send(JSON.stringify(obj));
+      } else if (data.type === "homeUserData") {
+        // console.log(data); // { name: 'Mark Tom', interests: 'Football', age: 20, school: 'Hill school', type: 'homeUserData'}
+        homepageLoad(data);
       } else {
         alert("Check username or password! They do not match!");
       }
     });
+}
+
+function homepageLoad(obj) {
+  profileName.textContent = obj.name;
+  school.textContent += obj.school;
+  age.textContent += obj.age;
+  hobbies.textContent += obj.interests;
 }

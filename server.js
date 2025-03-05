@@ -3,7 +3,7 @@ import "dotenv/config";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
 import path from "path";
-import { insertUser, connectDatabase, loginUser } from "./database/database.js";
+import { insertUser, connectDatabase, loginUser , fetchHomepage } from "./database/database.js";
 import { WebSocketServer } from "ws";
 
 let connectedToDatabase = false;
@@ -104,7 +104,22 @@ wss.on("connection", (ws) => {
 
   ws.on("message", (data) => {
     let receivedData = JSON.parse(data);
-    if (connectedToDatabase) {
+    console.log(receivedData);
+    if (connectedToDatabase && receivedData.type === "homepage") {
+      fetchHomepage(receivedData)
+      .then((userData) => {
+        // console.log(userData[0].name);
+        let profileObj = {};
+
+        profileObj.name = userData[0].name;
+        profileObj.interests = userData[0].interests;
+        profileObj.age = userData[0].age;
+        profileObj.school = userData[0].school;
+        profileObj.type = "homeUserData";
+
+        ws.send(JSON.stringify(profileObj));
+      });
+    } else if (connectedToDatabase) {
       loginUser(receivedData)
       .then((logboool) => {
         if (logboool) {
@@ -146,36 +161,36 @@ server.listen(port, () => {
   console.log(`Server listening on port: ${port}`);
 });
 
-async function loadFileHome(res, filePath) {
-  const fullPath = path.join(__dirname, "src", filePath);
-  console.log(fullPath);
-  try {
-    const content = await fs.readFile(fullPath);
-    const ext = path.extname(filePath);
-    const contentType =
-      {
-        ".html": "text/html",
-        ".css": "text/css",
-        ".js": "text/javascript",
-      }[ext] || "text/plain";
+// async function loadFileHome(res, filePath) {
+//   const fullPath = path.join(__dirname, "src", filePath);
+//   console.log(fullPath);
+//   try {
+//     const content = await fs.readFile(fullPath);
+//     const ext = path.extname(filePath);
+//     const contentType =
+//       {
+//         ".html": "text/html",
+//         ".css": "text/css",
+//         ".js": "text/javascript",
+//       }[ext] || "text/plain";
 
-    res.writeHead(200, { "Content-Type": contentType });
-    res.end(content);
-  } catch (err) {
-    // res.statusCode = 404;
-    // res.end("File not found!");
-    // console.error(`Error getting the html file`, err);
+//     res.writeHead(200, { "Content-Type": contentType });
+//     res.end(content);
+//   } catch (err) {
+//     // res.statusCode = 404;
+//     // res.end("File not found!");
+//     // console.error(`Error getting the html file`, err);
 
-    const content = await fs.readFile(fullPath);
-    const ext = path.extname(filePath);
-    const contentType =
-      {
-        ".html": "text/html",
-        ".css": "text/css",
-        ".js": "text/javascript",
-      }[ext] || "text/plain";
+//     const content = await fs.readFile(fullPath);
+//     const ext = path.extname(filePath);
+//     const contentType =
+//       {
+//         ".html": "text/html",
+//         ".css": "text/css",
+//         ".js": "text/javascript",
+//       }[ext] || "text/plain";
 
-    res.writeHead(200, { "Content-Type": contentType });
-    res.end(content);
-  }
-}
+//     res.writeHead(200, { "Content-Type": contentType });
+//     res.end(content);
+//   }
+// }
